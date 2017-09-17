@@ -1,0 +1,26 @@
+{
+  "name": "mmnote",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "mushan",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "~1.6.2"
+  },
+  "dependencies": {
+    "codemirror": "^5.28.0",
+    "components-jqueryui": "^1.12.1",
+    "eventemitter3": "^2.0.3",
+    "fs-extra": "^4.0.1",
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
+    "mime": "^1.4.0",
+    "normalize.css": "^7.0.0",
+    "split.js": "^1.3.5",
+    "ztree": "^3.5.24"
+  }
+}

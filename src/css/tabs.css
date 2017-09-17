@@ -1,0 +1,38 @@
+/* .tabs:before{display:table; content:""} 
+.tabs:after{clear:both}*/
+
+.tabs {
+    display: flex;
+    background-color: #eee;
+    padding: 0px;
+    margin: 0px;
+    user-select: none;
+
+    /* 变量定义 */
+    --item-border-style: 1px solid rgb(1, 1, 1);
+    --item-background-color: rgb(246,246,246);
+    --item-active-background-color: rgb(0,127,255);
+}
+
+.tabs .tab-item {
+    display: flex;
+    width: 120px;
+    height: 35px;
+    padding-left: 10px;
+    border-left: var(--item-border-style);
+    background-color: var(--item-background-color);
+    cursor: pointer;
+}
+
+.tabs .tab-item:last-child{
+    border-right: var(--item-border-style);
+}
+
+.tabs .tab-item .title{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.tabs .tab-item.active{
+    background-color: var(--item-active-background-color)
+} 

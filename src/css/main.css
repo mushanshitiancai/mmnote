@@ -1,0 +1,63 @@
+html, body, #window-container {
+    height: 100%;
+}
+
+#editor-stack-container{
+    width: 100%;
+    height: 100%;
+    position: relative;
+} 
+
+
+#cm-container,#km-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+/* split begin  */
+.split p {
+    padding: 20px;
+}
+
+.split {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.gutter {
+    background-color: #eee;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+    background-image: url('../../node_modules/split.js/grips/vertical.png');
+    cursor: ew-resize;
+}
+
+.gutter.gutter-vertical {
+    background-image: url('../../node_modules/split.js/grips/horizontal.png');
+    cursor: ns-resize;
+}
+
+.split.split-horizontal, .gutter.gutter-horizontal {
+    height: 100%;
+    float: left;
+}
+
+#tree-container {
+    height: 100%;
+    float: left;
+    overflow: scroll;
+}
+
+#editor-container {
+    height: 100%;
+    float: left;
+    overflow: scroll;
+}
+/* split end  */

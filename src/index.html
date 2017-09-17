@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Hello World!</title>
+  <link rel="stylesheet" href="../node_modules/normalize.css/normalize.css" type="text/css">
+  <link rel="stylesheet" href="../res/photon/css/photon.css" type="text/css">
+  <link rel="stylesheet" href="../node_modules/ztree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+  <link rel="stylesheet" href="../res/kityminder-core/kityminder.core.css" type="text/css">
+
+
+  <script>
+    if (typeof module === 'object') { window.module = module; module = undefined; }
+  </script>
+  <script src="../node_modules/jquery/dist/jquery.js"></script>
+  <script>
+    if (window.module) module = window.module;
+  </script>
+
+  <link rel="stylesheet" href="../node_modules/components-jqueryui/themes/base/jquery-ui.css" type="text/css">
+  <script type="text/javascript" src="../node_modules/components-jqueryui/jquery-ui.js"></script>
+  <script type="text/javascript" src="../node_modules/ztree/js/jquery.ztree.core.js"></script>
+  <script src="../res/kity/kity.js"></script>
+  <script src="../res/kityminder-core/kityminder.core.js"></script>
+
+  <link rel="stylesheet" href="css/codemirror.css">
+  <script src="../node_modules/codemirror/lib/codemirror.js"></script>
+
+
+  <link rel="stylesheet" href="css/main.css">
+  <!-- <link rel="stylesheet" href="css/tabs.css"> -->
+  <link rel="stylesheet" href="css/minder.css">
+</head>
+
+<body>
+  <div id="window-container" class="window">
+    <header class="toolbar toolbar-header">
+      <h1 class="title">MMNote</h1>
+      <div class="toolbar-actions">
+        <div class="btn-group">
+          <button class="btn btn-default" data-command="openProject">
+        <span class="icon icon-home"></span>
+        </button>
+          <button class="btn btn-default" data-command="newMdNote">
+        <span class="icon icon-plus"></span>
+      </button>
+        </div>
+
+        <button class="btn btn-default">
+         <span class="icon icon-home icon-text"></span>
+      Filters
+    </button>
+
+        <button class="btn btn-default btn-dropdown pull-right">
+      <span class="icon icon-megaphone"></span>
+    </button>
+      </div>
+    </header>
+    <div class="window-content">
+      <!-- 目录树 -->
+      <div id="tree-container">
+        <ul id="tree" class="ztree"></ul>
+      </div>
+      <!-- 编辑区 -->
+      <div id="editor-container">
+        <div id="tabs" class="tab-group"></div>
+        <div id="editor-stack-container">
+          <div id="cm-container"></div>
+          <div id="km-container"></div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</body>
+
+<script>
+    var Split = require('split.js')
+    Split(['#tree-container', '#editor-container'], {
+      sizes: [25, 75],
+      minSize: 200
+    });
+
+    require('./render.js')
+
+</script>
+
+</html>
