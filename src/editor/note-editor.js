@@ -1,4 +1,7 @@
 const fs = require("fs")
+require("./codemirror-ext")
+
+
 
 class NoteEditor{
     constructor($container){
@@ -7,11 +10,14 @@ class NoteEditor{
     }
 
     open(filePath){
-        let content = fs.readFileSync(filePath,'utf-8')
-
-        this.cm.setValue(content);
+        this.cm.mmSwapDocByUrl(filePath, 'gfm', ()=>{
+            return fs.readFileSync(filePath,'utf-8')
+        });
+        this.cm.focus();
     }
 }
+
+
 
 
 module.exports = NoteEditor

@@ -16,7 +16,7 @@ let tree = new Tree($("#tree"), model)
 let tabs = new Tabs($("#tabs"), model)
 let noteEditor = new NoteEditor($("#cm-container"))
 let minderEditor = new MinderEditor($("#km-container"))
-let editorController = new EditorController($("#editor-stack-container"))
+let editorController = new EditorController($("#editor-stack-container"), model)
 
 editorController.registerEditor('application/javascript', noteEditor)
 editorController.registerEditor('text/markdown', noteEditor)

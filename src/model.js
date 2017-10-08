@@ -14,7 +14,8 @@ class Model extends EventEmitter {
         return {
             projectChange: 'projectChange',
             openNote: 'openNote',
-            activeNote: 'activeNote'
+            activeNote: 'activeNote',
+            closeNote: 'closeNote'
         }
     }
 
@@ -31,7 +32,7 @@ class Model extends EventEmitter {
         this._activeNote = null;
     }
 
-    emit(...args){
+    emit(...args) {
         console.log("model emit " + args)
         super.emit(...args);
     }
@@ -68,22 +69,38 @@ class Model extends EventEmitter {
         })
     }
 
-    openNote(notePath){
-        if(this._activeNote === notePath) return;
-        if(_.includes(this._openNotes, notePath)){
+    openNote(notePath) {
+        if (this._activeNote === notePath) return;
+        if (_.includes(this._openNotes, notePath)) {
             return this.activeNote(notePath);
         }
 
         this._openNotes.push(notePath);
         this._activeNote = notePath;
-        this.emit(Model.EVENTS.openNote);
+        this.emit(Model.EVENTS.openNote, notePath);
     }
 
-    activeNote(notePath){
-        if(this._activeNote === notePath) return;
+    activeNote(notePath) {
+        if (this._activeNote === notePath) return;
 
         this._activeNote = notePath;
-        this.emit(Model.EVENTS.activeNote);
+        this.emit(Model.EVENTS.activeNote, notePath);
+    }
+
+    closeNote(notePath) {
+        if (!_.includes(this._openNotes, notePath)) {
+            return;
+        }
+
+        _.pull(notePath);
+        if (this._activeNote === notePath) {
+            if (this._openNotes.length == 0) {
+                this._activeNote = null
+            } else {
+                this._activeNote = this._openNotes[this._openNotes.length - 1];
+            }
+        }
+        this.emit(Model.EVENTS.closeNote, notePath, this._activeNote);
     }
 }
 

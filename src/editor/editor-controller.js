@@ -1,9 +1,18 @@
 const mime = require('mime');
+const Model = require('../model');
 
 class EditorController {
-    constructor($container) {
+    constructor($container, model) {
         this.$container = $container
         this.editors = {}
+
+        model.on(Model.EVENTS.openNote, (path)=>{
+            this.open(path)
+        });
+
+         model.on(Model.EVENTS.activeNote, (path)=>{
+            this.open(path)
+        });
     }
 
     registerEditor(mimeStr, editor) {
