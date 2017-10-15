@@ -1,4 +1,4 @@
-const mime = require('mime');
+const MIME = require('mime');
 const Model = require('../model');
 
 class EditorController {
@@ -19,11 +19,10 @@ class EditorController {
         this.editors[mimeStr] = editor
     }
 
-    open(path, mimeStr) {
-        if(!mimeStr) mimeStr = mime.lookup(path)
-        if (this.editors[mimeStr]) {
-            let curEditor = this.editors[mimeStr]
-            curEditor.open(path)
+    open(note) {
+        if (this.editors[note.mime]) {
+            let curEditor = this.editors[note.mime]
+            curEditor.open(note)
 
             this.mapAllEditor((editor) => {
                 editor.$container.css('z-index','0')

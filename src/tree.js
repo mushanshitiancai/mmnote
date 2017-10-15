@@ -1,5 +1,6 @@
 const EventEmitter = require('eventemitter3')
 const Model = require('./model');
+const Note = require('./editor/note');
 
 class Tree extends EventEmitter{
 
@@ -10,7 +11,7 @@ class Tree extends EventEmitter{
             callback: {
                 onClick: (event, treeId, treeNode) => {
                     console.log(treeNode);
-                    model.openNote(treeNode.path);
+                    model.openNote(Note.create(treeNode.uri));
                 }
             }
         }

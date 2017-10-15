@@ -7,21 +7,22 @@ class Tabs extends EventEmitter{
 
     constructor($container, model) {
         super();
+        window._tabs = this;
         this.model = model;
         this.$container = $container
         this.itemMap = {}
         this.activeItemId = null
 
-        model.on(Model.EVENTS.openNote, (notePath) => {
-            this.addTab(notePath, p.basename(notePath), null);
+        model.on(Model.EVENTS.openNote, (note) => {
+            this.addTab(note.uri.toString(), note.name, null);
         });
 
-        model.on(Model.EVENTS.activeNote, (notePath) => {
-            this.activeTabById(notePath);
+        model.on(Model.EVENTS.activeNote, (note) => {
+            this.activeTabById(note.uri.toString());
         });
 
-        model.on(Model.EVENTS.closeNote, (notePath, nextNotePath) => {
-            this.closeTab(notePath, nextNotePath);
+        model.on(Model.EVENTS.closeNote, (note, nextNote) => {
+            this.closeTab(note.uri.toString(), nextNote.uri.toString());
         });
     }
 

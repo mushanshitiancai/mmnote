@@ -23,8 +23,8 @@ class MinderEditor {
         });
     }
 
-    open(path){
-        let content = fs.readFileSync(path,'utf-8')
+    open(note){
+        let content = fs.readFileSync(note.uri.fsPath,'utf-8')
         this.km.importJson(JSON.parse(content))
     }
 }
