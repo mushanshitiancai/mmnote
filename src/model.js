@@ -17,7 +17,8 @@ class Model extends EventEmitter {
             projectChange: 'projectChange',
             openNote: 'openNote',
             activeNote: 'activeNote',
-            closeNote: 'closeNote'
+            closeNote: 'closeNote',
+            updateNote: 'updateNote'
         }
     }
 

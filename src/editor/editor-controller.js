@@ -2,15 +2,15 @@ const MIME = require('mime');
 const Model = require('../model');
 
 class EditorController {
-    constructor($container, model) {
+    constructor($container, omodel) {
         this.$container = $container
         this.editors = {}
 
-        model.on(Model.EVENTS.openNote, (path)=>{
+        model.on(Model.EVENTS.openNote, (path) => {
             this.open(path)
         });
 
-         model.on(Model.EVENTS.activeNote, (path)=>{
+        model.on(Model.EVENTS.activeNote, (path) => {
             this.open(path)
         });
     }
@@ -25,15 +25,15 @@ class EditorController {
             curEditor.open(note)
 
             this.mapAllEditor((editor) => {
-                editor.$container.css('z-index','0')
+                editor.$container.css('z-index', '0')
             })
-            curEditor.$container.css('z-index','1')
+            curEditor.$container.css('z-index', '1')
         }
     }
 
-    mapAllEditor(cb){
-        for(let mime in this.editors){
-            if(this.editors.hasOwnProperty(mime)){
+    mapAllEditor(cb) {
+        for (let mime in this.editors) {
+            if (this.editors.hasOwnProperty(mime)) {
                 cb(this.editors[mime])
             }
         }

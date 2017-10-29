@@ -17,34 +17,34 @@ CodeMirror.defineDocExtension('mmGetMetaInfo', function (key) {
     return doc.mmMetaInfo ? doc.mmMetaInfo[key] : undefined;
 });
 
-CodeMirror.defineDocExtension('mmSetURL', function (url) {
-    let doc = this;
+["Note"].forEach(function (key) {
+    CodeMirror.defineDocExtension(`mmSet${key}`, function (value) {
+        let doc = this;
+        doc.mmSetMetaInfo(key.toLowerCase(), value);
+    });
 
-    doc.mmSetMetaInfo('url', url);
+    CodeMirror.defineDocExtension(`mmGet${key}`, function () {
+        let doc = this;
+        return doc.mmGetMetaInfo(key.toLowerCase());
+    });
 });
 
-CodeMirror.defineDocExtension('mmGetURL', function (url) {
-    let doc = this;
-
-    return doc.mmGetMetaInfo('url');
-});
-
-CodeMirror.defineExtension('mmSwapDocByUrl', function (url, mode, getContent, newDocSwapCallback) {
-    console.log('mmSwapDocByUrl ',arguments);
+CodeMirror.defineExtension('mmSwapDocByUrl', function (note, mode, newDocSwapCallback) {
+    console.log('mmSwapDocByUrl ', note, mode, newDocSwapCallback);
     let cm = this;
 
     if (!cm.mmDocMap) {
         cm.mmDocMap = new Map();
     }
 
-    if (cm.mmDocMap.has(url)) {
-        if (cm.mmDocMap.get(url) !== cm.getDoc()) {
-            cm.swapDoc(cm.mmDocMap.get(url));
+    if (cm.mmDocMap.has(note)) {
+        if (cm.mmDocMap.get(note) !== cm.getDoc()) {
+            cm.swapDoc(cm.mmDocMap.get(note));
         }
     } else {
         let newDoc = CodeMirror.Doc(getContent(), mode);
-        newDoc.mmSetURL(url);
-        cm.mmDocMap.set(url, newDoc);
+        newDoc.mmSetNote(note);
+        cm.mmDocMap.set(note, newDoc);
         cm.swapDoc(newDoc);
 
         if (newDocSwapCallback) {

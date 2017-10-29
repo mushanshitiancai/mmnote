@@ -3,11 +3,12 @@ const p = require("path")
 const EventEmitter = require('eventemitter3')
 const Model = require('./model');
 
-class Tabs extends EventEmitter{
+class Tabs extends EventEmitter {
 
     constructor($container, model) {
         super();
         window._tabs = this;
+
         this.model = model;
         this.$container = $container
         this.itemMap = {}
@@ -37,7 +38,7 @@ class Tabs extends EventEmitter{
         let model = this.model;
         let $close = $('<span>', {
             class: "icon icon-cancel icon-close-tab",
-            click: function(){
+            click: function () {
                 let tabId = $(this).parent('.tab-item').data("id");
                 model.closeNote(tabId);
             }
@@ -53,13 +54,13 @@ class Tabs extends EventEmitter{
                 name,
                 newIndex,
                 meta
+            },
+            click: function () {
+                let curId = $(this).data("id")
+                model.activeNote(curId);
             }
         })
         let that = this
-        $listItem.click(function () {
-            let curId = $(this).data("id")
-            model.activeNote(curId);
-        })
 
         $listItem.append($close)
         $listItem.append($title)
@@ -73,11 +74,11 @@ class Tabs extends EventEmitter{
     }
 
     closeTab(id, nextId) {
-        if(this.itemMap[id]){
+        if (this.itemMap[id]) {
             this.itemMap[id].remove();
             delete this.itemMap[id];
             this.activeItemId = null;
-            this.activeTabById(nextId,true);
+            this.activeTabById(nextId, true);
         }
     }
 
@@ -100,6 +101,48 @@ class Tabs extends EventEmitter{
                 this.onTabActive(id, index, meta, $tab)
             }
         }
+    }
+
+    dirtyTab(id) {
+        let $tab = this.itemMap[id]
+        if ($tab) {
+
+        }
+    }
+}
+
+class Tab extends EventEmitter{
+    constructor(id, name) {
+        this.id = id;
+        this.name = name;
+
+        this.$tab = $('<div>', {
+            class: "tab",
+            click: function () {
+                model.activeNote(id);
+            }
+        });
+
+        let $close = $('<span>', {
+            class: "icon icon-cancel icon-close-tab",
+            click: function () {
+                let tabId = $(this).parent('.tab-item').data("id");
+                model.closeNote(tabId);
+            }
+        }).appendTo(this.$tab);
+        
+        let $title = $("<span>", {
+            class: "title",
+            text: name
+        }).appendTo(this.$tab);
+    }
+
+    getId(){
+        return this.id;
+    }
+
+    getName(){
+        return this.name;
     }
 }
 

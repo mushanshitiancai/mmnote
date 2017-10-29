@@ -2,10 +2,12 @@ const p = require('path');
 const URI = require('../common/uri');
 const MIME = require('mime');
 const _ = require('lodash');
-
+const fs = require("fs-extra")
+const EventEmitter = require('eventemitter3')
 
 // note数据结构
-class Note {
+class Note extends EventEmitter {
+
     static create(uri, mime) {
         if (typeof uri === 'string') {
             uri = URI.parse(uri);
@@ -30,8 +32,12 @@ class Note {
     }
 
     constructor(uri, mime) {
+        super();
         this._uri = uri;
         this._mime = mime || MIME.lookup(uri.fsPath);
+        this._rawContent = null;
+        this._content = null;
+        this._isDirty = false;
     }
 
     get uri() {
@@ -43,16 +49,32 @@ class Note {
     }
 
     get name() {
-        return p.basename(this.uri.fsPath)
+        return p.basename(this._uri.fsPath)
     }
 
     get isUnTitled() {
         return this.uri.scheme === Note.UNTITLE_SCHEME;
     }
+
+    readContent() {
+        if (!this._content) {
+            this._rawContent = fs.readFileSync(this._uri.fsPath, 'utf-8')
+            this._content = this._rawContent;
+        }
+        return this._content;
+    }
+
+    update(content){
+        this._content = content;
+        this.emit(Note.EVENTS.update, content);
+    }
 }
 
 Note.UNTITLE_SCHEME = 'untitled';
 Note.NOTE_CACHE = {};
+Note.EVENTS = {
+    update: 'update'
+}
 
 window._note = Note;
 module.exports = Note;

@@ -7,24 +7,32 @@ class NoteEditor {
     constructor($container) {
         this.$container = $container
         this.cm = CodeMirror($container.get(0))
-    }
 
-    openByFsPath(filePath) {
-        this.cm.mmSwapDocByUrl(filePath, 'gfm', () => {
-            return fs.readFileSync(filePath, 'utf-8')
-        });
-        this.cm.focus();
+        // let events = ['change','changes','beforeChange']
+        // events.forEach( (event) => {
+        //     this.cm.on(event, function (cm, arg1) {
+        //         console.log("codemirror event: " + event, arg1);
+        //     });
+        // });
+
+        this.cm.on('change', (cm, changeObj) => {
+            let doc = cm.getDoc();
+            let note = doc.mmGetNote();
+            note.update(doc.getValue()); // getValue()是否低效？
+        })
     }
 
     open(note) {
         if (!note.isUnTitled) {
-            this.openByFsPath(note.uri.fsPath);
+            this.cm.mmSwapDocByUrl(note.uri.toString(), 'gfm', () => {
+                return note.readContent();
+            });
         } else {
             this.cm.mmSwapDocByUrl(note.uri.toString(), 'gfm', () => {
                 return "untitled"
             });
-            this.cm.focus();
         }
+        this.cm.focus();
     }
 }
 
