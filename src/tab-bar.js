@@ -2,6 +2,7 @@ const _ = require("lodash")
 const p = require("path")
 const EventEmitter = require('eventemitter3')
 const Model = require('./model');
+const Note = require("./editor/note");
 
 class TabBar extends EventEmitter {
 
@@ -20,11 +21,11 @@ class TabBar extends EventEmitter {
         });
 
         model.on(Model.EVENTS.activeNote, (note) => {
-            this.activeTabById(note.uri.toString());
+            this.activeTab(note.uri.toString());
         });
 
         model.on(Model.EVENTS.closeNote, (note, nextNote) => {
-            this.closeTab(note.uri.toString(), nextNote.uri.toString());
+            // this.closeTab(note.uri.toString(), nextNote.uri.toString());
         });
     }
 
@@ -36,6 +37,7 @@ class TabBar extends EventEmitter {
         }
 
         this._$container.append(tab.getElement());
+        this._bindTabEvent(tab);
 
         this._tabMap[newTabId] = tab;
         this._tabIds.push(newTabId);
@@ -44,20 +46,46 @@ class TabBar extends EventEmitter {
         return this._tabIds.length - 1;
     }
 
+    _bindTabEvent(tab){
+        tab.on(Tab.EVENTS.click, (targetTab)=>{
+            this._model.activeNote(Note.create(targetTab.getId()));
+        });
+        tab.on(Tab.EVENTS.close, (targetTab)=>{
+            this._model.closeNote(Note.create(targetTab.getId()));
+        });
+    }
+
     activeTab(id){
+        if(this._activeTabId === id) return;
+        if(!this._tabMap[id]) throw new Error(`activeTab fail. ${id} is not in tab-bar`);
+
+        let prevId = this._activeTabId;
+        this._activeTabId = id;
+
+        if(prevId){
+            this._tabMap[prevId].setActive(false);
+        }
+        this._tabMap[id].setActive(true);
+    }
+
+    closeTab(id){
+        if(!this._tabMap[id]) throw new Error(`closeTab fail. ${id} is not in tab-bar`);
+
         
     }
 }
 
 class Tab extends EventEmitter {
     constructor(id, title) {
-        that = this;
+        super();
+        let that = this;
         this._id = id;
         this._title = title;
+        this._isActive = false;
         this._isDirty = false;
 
         this._$tab = $('<div>', {
-            class: "tab",
+            class: "tab-item",
             click: function () {
                 that.emit(Tab.EVENTS.click, that);
             }
@@ -75,7 +103,7 @@ class Tab extends EventEmitter {
             text: title
         }).appendTo(this._$tab);
 
-        this.$dirtyMark = $("<span>", {
+        this._$dirtyMark = $("<span>", {
             text: "*",
             css: {
                 display: "none"
@@ -95,16 +123,29 @@ class Tab extends EventEmitter {
         return this._title;
     }
 
+    isActive(){
+        return this._isActive;
+    }
+
     isDirty() {
         return this._isDirty;
     }
 
-    setDirty(isDirty) {
-        this._isDirty = !!isDirty;
+    setActive(active){
+        this._isActive = !!active;
+        if(this._isActive){
+            this._$tab.addClass("active");
+        }else{
+            this._$tab.removeClass("active");
+        }
+    }
+
+    setDirty(dirty) {
+        this._isDirty = !!dirty;
         if (this._isDirty) {
-            this.$dirtyMark.css("display", "normal")
+            this._$dirtyMark.css("display", "normal")
         } else {
-            this.$dirtyMark.css("display", "none")
+            this._$dirtyMark.css("display", "none")
         }
     }
 }
@@ -114,4 +155,4 @@ Tab.EVENTS = {
     close: "close"
 }
 
-module.exports = TabBar
+module.exports = {TabBar,Tab}

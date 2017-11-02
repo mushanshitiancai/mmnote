@@ -68,6 +68,10 @@ class Note extends EventEmitter {
         this._content = content;
         this.emit(Note.EVENTS.update, content);
     }
+
+    toString(){
+        return `Note(${this._uri.toString()})`
+    }
 }
 
 Note.UNTITLE_SCHEME = 'untitled';

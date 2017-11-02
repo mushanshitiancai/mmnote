@@ -29,8 +29,8 @@ CodeMirror.defineDocExtension('mmGetMetaInfo', function (key) {
     });
 });
 
-CodeMirror.defineExtension('mmSwapDocByUrl', function (note, mode, newDocSwapCallback) {
-    console.log('mmSwapDocByUrl ', note, mode, newDocSwapCallback);
+CodeMirror.defineExtension('mmSwapDocByUrl', function (note, mode, getContent, newDocSwapCallback) {
+    console.log('mmSwapDocByUrl ', note, mode, getContent, newDocSwapCallback);
     let cm = this;
 
     if (!cm.mmDocMap) {
