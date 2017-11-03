@@ -8,11 +8,19 @@ html, body, #window-container {
     position: relative;
 } 
 
-
-#cm-container,#km-container {
+#editor-stack-container #cm-container,#km-container,#backgroud-container {
     width: 100%;
     height: 100%;
     position: absolute;
+    z-index: -1;
+}
+
+#editor-stack-container #backgroud-container{
+    z-index: 0;
+    background-color: gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* split begin  */

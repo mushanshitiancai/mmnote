@@ -15,22 +15,24 @@ class Model extends EventEmitter {
     static get EVENTS() {
         return {
             projectChange: 'projectChange',
-            openNote: 'openNote',
-            activeNote: 'activeNote',
-            closeNote: 'closeNote',
-            updateNote: 'updateNote'
+            openNote: 'openNote', // note, index
+            activeNote: 'activeNote', // note, index
+            closeNote: 'closeNote', // note, index
+            updateNote: 'updateNote' // note, index
         }
     }
 
     constructor() {
         super();
-        window._model = this;
+        window._d.model = this;
 
         // 打开的工程的目录树
         this._treeNodes = []
 
-        // 打开的笔记的path列表
-        this._openNotes = []
+        // 打开的笔记列表
+        this._openNotes = {}
+        this._openNoteUriStrOrderArr = []
+        this._activeNoteUriStrHistory = []
 
         // 当前编辑的笔记
         this._activeNote = null;
@@ -61,7 +63,7 @@ class Model extends EventEmitter {
             for (let file of files) {
                 let filePath = p.join(folderPath, file)
                 promises.push(fs.stat(filePath).then((stats) => {
-                    let node = { name: file, path: filePath, children: [], stats , uri: URI.file(filePath).toString()}
+                    let node = { name: file, path: filePath, children: [], stats, uri: URI.file(filePath).toString() }
                     parentNode.children.push(node);
                     if (stats.isDirectory()) {
                         return this._load(filePath, node)
@@ -73,39 +75,64 @@ class Model extends EventEmitter {
         })
     }
 
+    _getNoteIndex(note) {
+        return _.findIndex(this._openNoteUriStrOrderArr, x => x === note.uriString);
+    }
+
+    _getActiveNoteIndex(note) {
+        if (!note) return -1;
+        return this._getNoteIndex(note);
+    }
+
     openNote(note) {
+        if (typeof note === 'string') note = Note.create(note);
         if (this._activeNote === note) return;
-        if (_.includes(this._openNotes, note)) {
+        if (this._openNotes[note.uriString]) {
             return this.activeNote(note);
         }
 
-        this._openNotes.push(note);
-        this._activeNote = note;
+        this._openNotes[note.uriString] = note;
+        this._openNoteUriStrOrderArr.splice(this._getActiveNoteIndex() + 1, 0, note.uriString);
+
         this.emit(Model.EVENTS.openNote, note);
+        this.activeNote(note);
     }
 
     activeNote(note) {
-        if(typeof note === 'string') note = Note.create(note);
+        if (typeof note === 'string') note = Note.create(note);
         if (this._activeNote === note) return;
 
         this._activeNote = note;
+        this._activeNoteUriStrHistory.push(note.uriString);
+
         this.emit(Model.EVENTS.activeNote, note);
     }
 
+    _activePrevNote() {
+        this._activeNoteUriStrHistory.pop()
+        let lastActiveTabUriStr = _.last(this._activeNoteUriStrHistory)
+        if(!lastActiveTabUriStr) return;
+
+        this._activeNote = this._openNotes[lastActiveTabUriStr]
+
+         this.emit(Model.EVENTS.activeNote, this._activeNote);
+    }
+
     closeNote(note) {
-        if (!_.includes(this._openNotes, note)) {
+        if (typeof note === 'string') note = Note.create(note);
+        if (!this._openNotes[note.uriString]) {
             return;
         }
 
-        _.pull(this._openNotes, note);
+        let noteIndex = this._getNoteIndex(note)
+        delete this._openNotes[note.uriString]
+        _.pull(this._openNoteUriStrOrderArr, note.uriString)
+
         if (this._activeNote === note) {
-            if (this._openNotes.length == 0) {
-                this._activeNote = null
-            } else {
-                this._activeNote = this._openNotes[this._openNotes.length - 1];
-            }
+            this._activePrevNote()
         }
-        this.emit(Model.EVENTS.closeNote, note, this._activeNote);
+
+        this.emit(Model.EVENTS.closeNote, note, noteIndex);
     }
 }
 

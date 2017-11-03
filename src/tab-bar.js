@@ -24,8 +24,8 @@ class TabBar extends EventEmitter {
             this.activeTab(note.uri.toString());
         });
 
-        model.on(Model.EVENTS.closeNote, (note, nextNote) => {
-            // this.closeTab(note.uri.toString(), nextNote.uri.toString());
+        model.on(Model.EVENTS.closeNote, (note) => {
+            this.closeTab(note.uri.toString());
         });
     }
 
@@ -33,7 +33,7 @@ class TabBar extends EventEmitter {
         let newTabId = tab.getId();
 
         if (this._tabMap[newTabId]) {
-            return this.activeTab(newTabId);
+            return
         }
 
         this._$container.append(tab.getElement());
@@ -42,7 +42,6 @@ class TabBar extends EventEmitter {
         this._tabMap[newTabId] = tab;
         this._tabIds.push(newTabId);
 
-        this.activeTab(newTabId);
         return this._tabIds.length - 1;
     }
 
@@ -69,9 +68,12 @@ class TabBar extends EventEmitter {
     }
 
     closeTab(id){
-        if(!this._tabMap[id]) throw new Error(`closeTab fail. ${id} is not in tab-bar`);
+        let targetTab = this._tabMap[id]
+        if(!targetTab) throw new Error(`closeTab fail. ${id} is not in tab-bar`);
 
-        
+        targetTab.getElement().remove();
+        delete this._tabMap[id];
+        _.remove(this._tabIds, id);
     }
 }
 

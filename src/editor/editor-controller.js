@@ -6,12 +6,16 @@ class EditorController {
         this.$container = $container
         this.editors = {}
 
-        model.on(Model.EVENTS.openNote, (path) => {
-            this.open(path)
+        model.on(Model.EVENTS.openNote, (note) => {
+            this.open(note)
         });
 
-        model.on(Model.EVENTS.activeNote, (path) => {
-            this.open(path)
+        model.on(Model.EVENTS.activeNote, (note) => {
+            this.open(note)
+        });
+
+        model.on(Model.EVENTS.closeNote, (note) => {
+            
         });
     }
 
@@ -25,11 +29,13 @@ class EditorController {
             curEditor.open(note)
 
             this.mapAllEditor((editor) => {
-                editor.$container.css('z-index', '0')
+                editor.$container.css('z-index', '-1')
             })
             curEditor.$container.css('z-index', '1')
         }
     }
+
+
 
     mapAllEditor(cb) {
         for (let mime in this.editors) {

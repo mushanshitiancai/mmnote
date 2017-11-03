@@ -44,6 +44,10 @@ class Note extends EventEmitter {
         return this._uri;
     }
 
+    get uriString(){
+        return this._uri.toString();
+    }
+
     get mime() {
         return this._mime;
     }

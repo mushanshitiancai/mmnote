@@ -24,15 +24,19 @@ class NoteEditor {
 
     open(note) {
         if (!note.isUnTitled) {
-            this.cm.mmSwapDocByUrl(note.uri.toString(), 'gfm', () => {
+            this.cm.mmSwapDocByNote(note, 'gfm', () => {
                 return note.readContent();
             });
         } else {
-            this.cm.mmSwapDocByUrl(note.uri.toString(), 'gfm', () => {
+            this.cm.mmSwapDocByNote(note, 'gfm', () => {
                 return "untitled"
             });
         }
         this.cm.focus();
+    }
+
+    close(note){
+        
     }
 }
 
