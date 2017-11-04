@@ -13,11 +13,12 @@ class TabBar extends EventEmitter {
         this._model = model
         this._$container = $container
         this._tabMap = {}
-        this._tabIds = [];
+        this._tabIdOrderArr = [];
         this._activeTabId = null
 
-        model.on(Model.EVENTS.openNote, (note) => {
-            this.appendTab(new Tab(note.uri.toString(), note.name));
+        model.on(Model.EVENTS.openNote, (note, index) => {
+            let newTab = new Tab(note.uri.toString(), note.name);
+            this.addTab(newTab, index);
         });
 
         model.on(Model.EVENTS.activeNote, (note) => {
@@ -29,51 +30,64 @@ class TabBar extends EventEmitter {
         });
     }
 
+    _getActiveTabIndex() {
+        return this._tabIdOrderArr.indexOf(this._activeTabId)
+    }
+
     appendTab(tab) {
-        let newTabId = tab.getId();
+        return this.addTab(tab, this._tabIdOrderArr.length);
+    }
 
-        if (this._tabMap[newTabId]) {
-            return
+    addTab(tab, index) {
+        if (this._tabMap[tab.id]) return;
+        if (index < 0) index = 0;
+        if (index > this._tabIdOrderArr.length) index = this._tabIdOrderArr.length;
+
+        if (index == 0) {
+            this._$container.prepend(tab.$element);
+        } else if (index == this._tabIdOrderArr.length){
+            this._$container.append(tab.$element);
+        } else {
+            this._$container.find(`.tab-item:nth-child(${index + 1})`).before(tab.$element);
         }
-
-        this._$container.append(tab.getElement());
         this._bindTabEvent(tab);
 
-        this._tabMap[newTabId] = tab;
-        this._tabIds.push(newTabId);
+        this._tabMap[tab.id] = tab;
+        this._tabIdOrderArr.splice(index, 0, tab.id);
 
-        return this._tabIds.length - 1;
+        return index;
     }
 
-    _bindTabEvent(tab){
-        tab.on(Tab.EVENTS.click, (targetTab)=>{
-            this._model.activeNote(Note.create(targetTab.getId()));
+    _bindTabEvent(tab) {
+        tab.on(Tab.EVENTS.click, (targetTab) => {
+            this._model.activeNote(Note.create(targetTab.id));
         });
-        tab.on(Tab.EVENTS.close, (targetTab)=>{
-            this._model.closeNote(Note.create(targetTab.getId()));
+        tab.on(Tab.EVENTS.close, (targetTab) => {
+            this._model.closeNote(Note.create(targetTab.id));
         });
     }
 
-    activeTab(id){
-        if(this._activeTabId === id) return;
-        if(!this._tabMap[id]) throw new Error(`activeTab fail. ${id} is not in tab-bar`);
+    activeTab(id) {
+        if (this._activeTabId === id) return;
+        if (!this._tabMap[id]) throw new Error(`activeTab fail. ${id} is not in tab-bar`);
 
         let prevId = this._activeTabId;
         this._activeTabId = id;
 
-        if(prevId){
+        if (prevId) {
             this._tabMap[prevId].setActive(false);
         }
         this._tabMap[id].setActive(true);
     }
 
-    closeTab(id){
+    closeTab(id) {
         let targetTab = this._tabMap[id]
-        if(!targetTab) throw new Error(`closeTab fail. ${id} is not in tab-bar`);
+        if (!targetTab) throw new Error(`closeTab fail. ${id} is not in tab-bar`);
 
-        targetTab.getElement().remove();
+        targetTab.$element.remove();
         delete this._tabMap[id];
-        _.remove(this._tabIds, id);
+        _.pull(this._tabIdOrderArr, id);
+        if(id === this._activeTabId) this._activeTabId = null;
     }
 }
 
@@ -113,31 +127,31 @@ class Tab extends EventEmitter {
         }).appendTo($title);
     }
 
-    getElement() {
+    get $element() {
         return this._$tab;
     }
 
-    getId() {
+    get id() {
         return this._id;
     }
 
-    getTitle() {
+    get title() {
         return this._title;
     }
 
-    isActive(){
+    get isActive() {
         return this._isActive;
     }
 
-    isDirty() {
+    get isDirty() {
         return this._isDirty;
     }
 
-    setActive(active){
+    setActive(active) {
         this._isActive = !!active;
-        if(this._isActive){
+        if (this._isActive) {
             this._$tab.addClass("active");
-        }else{
+        } else {
             this._$tab.removeClass("active");
         }
     }
@@ -157,4 +171,4 @@ Tab.EVENTS = {
     close: "close"
 }
 
-module.exports = {TabBar,Tab}
+module.exports = { TabBar, Tab }

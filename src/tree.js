@@ -10,7 +10,7 @@ class Tree extends EventEmitter{
         this.setting = {
             callback: {
                 onClick: (event, treeId, treeNode) => {
-                    console.log(treeNode);
+                    // console.log(treeNode);
                     model.openNote(Note.create(treeNode.uri));
                 }
             }

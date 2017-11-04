@@ -30,7 +30,7 @@ CodeMirror.defineDocExtension('mmGetMetaInfo', function (key) {
 });
 
 CodeMirror.defineExtension('mmSwapDocByNote', function (note, mode, getContent, newDocSwapCallback) {
-    console.log('mmSwapDocByNote ', note, mode, getContent, newDocSwapCallback);
+    // console.log('mmSwapDocByNote ', note, mode, getContent, newDocSwapCallback);
     let cm = this;
 
     if (!cm.mmDocMap) {

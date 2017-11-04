@@ -27,6 +27,10 @@ class MinderEditor {
         let content = fs.readFileSync(note.uri.fsPath,'utf-8')
         this.km.importJson(JSON.parse(content))
     }
+
+    close(note){
+
+    }
 }
 
 class Receiver {

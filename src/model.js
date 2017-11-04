@@ -30,7 +30,7 @@ class Model extends EventEmitter {
         this._treeNodes = []
 
         // 打开的笔记列表
-        this._openNotes = {}
+        this._openNoteMap = new Map();
         this._openNoteUriStrOrderArr = []
         this._activeNoteUriStrHistory = []
 
@@ -39,7 +39,8 @@ class Model extends EventEmitter {
     }
 
     emit(...args) {
-        console.log("model emit " + args)
+        console.log(`Model emit[%c${args[0]}%c] ${args.slice(1)}`, 'color:red','')
+        this._log();
         super.emit(...args);
     }
 
@@ -76,25 +77,27 @@ class Model extends EventEmitter {
     }
 
     _getNoteIndex(note) {
-        return _.findIndex(this._openNoteUriStrOrderArr, x => x === note.uriString);
+        if (!note) return -1;
+        return this._openNoteUriStrOrderArr.indexOf(note.uriString);
     }
 
-    _getActiveNoteIndex(note) {
-        if (!note) return -1;
-        return this._getNoteIndex(note);
+    _getActiveNoteIndex() {
+        return this._getNoteIndex(this._activeNote);
     }
 
     openNote(note) {
         if (typeof note === 'string') note = Note.create(note);
         if (this._activeNote === note) return;
-        if (this._openNotes[note.uriString]) {
+        if (this._openNoteMap.has(note.uriString)) {
             return this.activeNote(note);
         }
 
-        this._openNotes[note.uriString] = note;
-        this._openNoteUriStrOrderArr.splice(this._getActiveNoteIndex() + 1, 0, note.uriString);
+        this._openNoteMap.set(note.uriString, note);
 
-        this.emit(Model.EVENTS.openNote, note);
+        let curNoteIdex = this._getActiveNoteIndex() + 1
+        this._openNoteUriStrOrderArr.splice(curNoteIdex, 0, note.uriString);
+
+        this.emit(Model.EVENTS.openNote, note, curNoteIdex);
         this.activeNote(note);
     }
 
@@ -104,8 +107,9 @@ class Model extends EventEmitter {
 
         this._activeNote = note;
         this._activeNoteUriStrHistory.push(note.uriString);
+        let activeNoteIndex = this._getActiveNoteIndex();
 
-        this.emit(Model.EVENTS.activeNote, note);
+        this.emit(Model.EVENTS.activeNote, note, activeNoteIndex);
     }
 
     _activePrevNote() {
@@ -113,26 +117,34 @@ class Model extends EventEmitter {
         let lastActiveTabUriStr = _.last(this._activeNoteUriStrHistory)
         if(!lastActiveTabUriStr) return;
 
-        this._activeNote = this._openNotes[lastActiveTabUriStr]
+        this._activeNote = this._openNoteMap.get(lastActiveTabUriStr)
 
          this.emit(Model.EVENTS.activeNote, this._activeNote);
     }
 
     closeNote(note) {
         if (typeof note === 'string') note = Note.create(note);
-        if (!this._openNotes[note.uriString]) {
+        if (!this._openNoteMap.has(note.uriString)) {
             return;
         }
 
         let noteIndex = this._getNoteIndex(note)
-        delete this._openNotes[note.uriString]
+        this._openNoteMap.delete(note.uriString)
         _.pull(this._openNoteUriStrOrderArr, note.uriString)
+        _.pull(this._activeNoteUriStrHistory, note.uriString)
 
         if (this._activeNote === note) {
             this._activePrevNote()
         }
 
         this.emit(Model.EVENTS.closeNote, note, noteIndex);
+    }
+
+    _log(){
+        let prefix = '    '
+        let prefix2 = '      '
+        console.log(prefix + "_openNotes: \n" + _.map(this._openNoteMap, x => prefix2 + x.uriString).join("\n"));
+        console.log(prefix + "_openNoteUriStrOrderArr: \n" + _.map(this._openNoteUriStrOrderArr, x => prefix2 + x).join("\n"));
     }
 }
 
