@@ -18,7 +18,7 @@ class Tree extends EventEmitter{
         this.nodes = []
         // this.zTree = $.fn.zTree.init(treeDom, this.setting, this.nodes);
 
-        model.on(Model.EVENTS.projectChange, () => {
+        model.on(Model.EVENTS.projectChange, (target) => {
             this.zTree = $.fn.zTree.init(this.$containere, this.setting, model._treeNodes);
         });
     }

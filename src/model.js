@@ -18,7 +18,9 @@ class Model extends EventEmitter {
             openNote: 'openNote', // note, index
             activeNote: 'activeNote', // note, index
             closeNote: 'closeNote', // note, index
-            updateNote: 'updateNote' // note, index
+            updateNote: 'updateNote', // note, index
+
+            noteEvent: 'noteEvent'
         }
     }
 
@@ -32,14 +34,14 @@ class Model extends EventEmitter {
         // 打开的笔记列表
         this._openNoteMap = new Map();
         this._openNoteUriStrOrderArr = []
-        this._activeNoteUriStrHistory = []
+        this._activeNoteUriStrHistoryArr = []
 
         // 当前编辑的笔记
         this._activeNote = null;
     }
 
     emit(...args) {
-        console.log(`Model emit[%c${args[0]}%c] ${args.slice(1)}`, 'color:red','')
+        console.log(`Model emit[%c${args[0]}%c] ${args.slice(2)}`, 'color:red', '')
         this._log();
         super.emit(...args);
     }
@@ -53,7 +55,7 @@ class Model extends EventEmitter {
         this._treeNodes.push(rootNode);
 
         return this._load(folderPath, rootNode).then(() => {
-            this.emit(Model.EVENTS.projectChange);
+            this.emit(Model.EVENTS.projectChange, this);
         });
     }
 
@@ -85,6 +87,12 @@ class Model extends EventEmitter {
         return this._getNoteIndex(this._activeNote);
     }
 
+    _delegateNoteEvent(note){
+        note.on(Note.EVENTS.update, (target, content) => {
+            this.emit(Model.EVENTS.noteEvent, this, Note.EVENTS.update, target, content)
+        });
+    }
+
     openNote(note) {
         if (typeof note === 'string') note = Note.create(note);
         if (this._activeNote === note) return;
@@ -97,7 +105,10 @@ class Model extends EventEmitter {
         let curNoteIdex = this._getActiveNoteIndex() + 1
         this._openNoteUriStrOrderArr.splice(curNoteIdex, 0, note.uriString);
 
-        this.emit(Model.EVENTS.openNote, note, curNoteIdex);
+        // 代理note的事件
+        this._delegateNoteEvent(note);
+
+        this.emit(Model.EVENTS.openNote, this, note, curNoteIdex);
         this.activeNote(note);
     }
 
@@ -106,20 +117,20 @@ class Model extends EventEmitter {
         if (this._activeNote === note) return;
 
         this._activeNote = note;
-        this._activeNoteUriStrHistory.push(note.uriString);
+        this._activeNoteUriStrHistoryArr.push(note.uriString);
         let activeNoteIndex = this._getActiveNoteIndex();
 
-        this.emit(Model.EVENTS.activeNote, note, activeNoteIndex);
+        this.emit(Model.EVENTS.activeNote, this, note, activeNoteIndex);
     }
 
     _activePrevNote() {
-        this._activeNoteUriStrHistory.pop()
-        let lastActiveTabUriStr = _.last(this._activeNoteUriStrHistory)
-        if(!lastActiveTabUriStr) return;
+        this._activeNoteUriStrHistoryArr.pop()
+        let lastActiveTabUriStr = _.last(this._activeNoteUriStrHistoryArr)
+        if (!lastActiveTabUriStr) return;
 
         this._activeNote = this._openNoteMap.get(lastActiveTabUriStr)
 
-         this.emit(Model.EVENTS.activeNote, this._activeNote);
+        this.emit(Model.EVENTS.activeNote, this, this._activeNote);
     }
 
     closeNote(note) {
@@ -128,19 +139,21 @@ class Model extends EventEmitter {
             return;
         }
 
+        // TODO 关闭对note事件的代理
+
         let noteIndex = this._getNoteIndex(note)
         this._openNoteMap.delete(note.uriString)
         _.pull(this._openNoteUriStrOrderArr, note.uriString)
-        _.pull(this._activeNoteUriStrHistory, note.uriString)
+        _.pull(this._activeNoteUriStrHistoryArr, note.uriString)
 
         if (this._activeNote === note) {
             this._activePrevNote()
         }
 
-        this.emit(Model.EVENTS.closeNote, note, noteIndex);
+        this.emit(Model.EVENTS.closeNote, this, note, noteIndex);
     }
 
-    _log(){
+    _log() {
         let prefix = '    '
         let prefix2 = '      '
         console.log(prefix + "_openNotes: \n" + _.map(this._openNoteMap, x => prefix2 + x.uriString).join("\n"));

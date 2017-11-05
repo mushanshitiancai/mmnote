@@ -7,15 +7,15 @@ class EditorController {
         this.$container = $container
         this.editors = {}
 
-        model.on(Model.EVENTS.openNote, (note, index) => {
+        model.on(Model.EVENTS.openNote, (target, note, index) => {
             this.openNote(note)
         });
 
-        model.on(Model.EVENTS.activeNote, (note, index) => {
+        model.on(Model.EVENTS.activeNote, (target, note, index) => {
             this.openNote(note)
         });
 
-        model.on(Model.EVENTS.closeNote, (note, index) => {
+        model.on(Model.EVENTS.closeNote, (target, note, index) => {
             this.closeNote(note, index)
         });
     }

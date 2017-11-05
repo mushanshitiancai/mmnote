@@ -34,7 +34,7 @@ editorController.registerEditor('text/markdown', noteEditor)
 editorController.registerEditor(constant.mime.minder, minderEditor)
 
 model.openProject(p.join(process.cwd(), "demo-note"));
-// model.openNote(Note.create(p.join(process.cwd(), 'src/css/minder.css'),'text/markdown'));
+model.openNote(Note.create(p.join(process.cwd(), 'src/css/minder.css'),'text/markdown'));
 // model.openNote(Note.createUntitle('s','text/markdown'));
 
 

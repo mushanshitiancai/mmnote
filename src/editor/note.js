@@ -40,6 +40,15 @@ class Note extends EventEmitter {
         this._isDirty = false;
     }
 
+    emit(...args) {
+        if(args[0] == 'update'){
+            console.log(`Note emit[%c${args[0]}%c]`, 'color:red', '')
+        }else{
+            console.log(`Note emit[%c${args[0]}%c] ${args.slice(2)}`, 'color:red', '')
+        }
+        super.emit(...args);
+    }
+
     get uri() {
         return this._uri;
     }
@@ -56,6 +65,10 @@ class Note extends EventEmitter {
         return p.basename(this._uri.fsPath)
     }
 
+    get isDirty(){
+        return this._isDirty;
+    }
+
     get isUnTitled() {
         return this.uri.scheme === Note.UNTITLE_SCHEME;
     }
@@ -70,7 +83,8 @@ class Note extends EventEmitter {
 
     update(content){
         this._content = content;
-        this.emit(Note.EVENTS.update, content);
+        this._isDirty = this._content != this._rawContent;
+        this.emit(Note.EVENTS.update, this);
     }
 
     toString(){
