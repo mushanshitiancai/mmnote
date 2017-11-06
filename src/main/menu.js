@@ -12,7 +12,7 @@ const template = [
           console.log(arguments);
           var win = BrowserWindow.getFocusedWindow();
           if (win) {
-            return win.webContents.send("command", 1, 2);
+            return win.webContents.send("command", "save", []);
           }
         }
       },

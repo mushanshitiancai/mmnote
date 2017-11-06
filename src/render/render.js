@@ -10,6 +10,7 @@ const MinderEditor = require("./editor/minder-editor")
 const Model = require("./model")
 const Commander = require("./command/commander")
 const URI = require("../common/uri");
+const IPCRender = require("./ipc-render");
 
 window._d = {}
 window._d.process = process;
@@ -19,10 +20,11 @@ console.log(URI.file('c:/win/path'));
 
 const Note = require("./editor/note");
 
+let ipcRender = new IPCRender();
 let model = new Model();
 window.model = model;
 
-let commander = new Commander(model);
+let commander = new Commander(model, ipcRender);
 let tree = new Tree($("#tree"), model)
 let tabBar = new TabBar($("#tabs"), model)
 let noteEditor = new NoteEditor($("#cm-container"))

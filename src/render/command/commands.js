@@ -18,6 +18,11 @@ let Commands = {
         run: function (model, notePath) {
             model.closeNote(notePath);
         }
+    },
+    save: {
+        run: function(model){
+            model.saveNote();
+        }
     }
 }
 

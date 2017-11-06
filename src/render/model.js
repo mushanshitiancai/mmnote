@@ -5,12 +5,6 @@ const _ = require("lodash");
 const Note = require("./editor/note");
 const URI = require('../common/uri');
 
-function runListeners(listeners) {
-    for (let listener of listeners) {
-        listener()
-    }
-}
-
 class Model extends EventEmitter {
     static get EVENTS() {
         return {
@@ -87,9 +81,11 @@ class Model extends EventEmitter {
         return this._getNoteIndex(this._activeNote);
     }
 
-    _delegateNoteEvent(note){
-        note.on(Note.EVENTS.update, (target, content) => {
-            this.emit(Model.EVENTS.noteEvent, this, Note.EVENTS.update, target, content)
+    _delegateNoteEvent(note) {
+        _.each(Note.EVENTS,(eventName) => {
+            note.on(eventName, (target, ...args) => {
+                this.emit(Model.EVENTS.noteEvent, this, eventName, target, ...args)
+            });
         });
     }
 
@@ -151,6 +147,13 @@ class Model extends EventEmitter {
         }
 
         this.emit(Model.EVENTS.closeNote, this, note, noteIndex);
+    }
+
+    saveNote(note) {
+        if (!note) note = this._activeNote;
+        if (!note) return;
+
+        note.save();
     }
 
     _log() {

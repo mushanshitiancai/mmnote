@@ -34,7 +34,7 @@ class TabBar extends EventEmitter {
         });
 
         model.on(Model.EVENTS.noteEvent, (target, noteEvent, targetNote) => {
-            if(noteEvent == Note.EVENTS.update){
+            if(noteEvent == Note.EVENTS.update || noteEvent == Note.EVENTS.save){
                 if(this._tabMap.has(targetNote.uriString)){
                     this._tabMap.get(targetNote.uriString).setDirty(targetNote.isDirty);
                 }

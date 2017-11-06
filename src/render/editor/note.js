@@ -87,6 +87,13 @@ class Note extends EventEmitter {
         this.emit(Note.EVENTS.update, this);
     }
 
+    save(){
+        fs.writeFileSync(this._uri.fsPath, this._content, 'utf-8');
+        this._rawContent = this._content;
+        this._isDirty = false;
+        this.emit(Note.EVENTS.save, this);
+    }
+
     toString(){
         return `Note(${this._uri.toString()})`
     }
@@ -95,7 +102,8 @@ class Note extends EventEmitter {
 Note.UNTITLE_SCHEME = 'untitled';
 Note.NOTE_CACHE = {};
 Note.EVENTS = {
-    update: 'update'
+    update: 'update',
+    save: 'save'
 }
 
 window._note = Note;
