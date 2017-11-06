@@ -1,5 +1,5 @@
 const p = require('path');
-const URI = require('../common/uri');
+const URI = require('../../common/uri');
 const MIME = require('mime');
 const _ = require('lodash');
 const fs = require("fs-extra")

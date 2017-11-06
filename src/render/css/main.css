@@ -43,12 +43,12 @@ html, body, #window-container {
 }
 
 .gutter.gutter-horizontal {
-    background-image: url('../../node_modules/split.js/grips/vertical.png');
+    background-image: url('../../../node_modules/split.js/grips/vertical.png');
     cursor: ew-resize;
 }
 
 .gutter.gutter-vertical {
-    background-image: url('../../node_modules/split.js/grips/horizontal.png');
+    background-image: url('../../../node_modules/split.js/grips/horizontal.png');
     cursor: ns-resize;
 }
 

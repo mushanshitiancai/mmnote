@@ -1,4 +1,4 @@
-const constant = require("./constant")
+const constant = require("../common/constant")
 const fs = require("fs")
 const p = require("path")
 const Tree = require("./tree")
@@ -9,7 +9,7 @@ const NoteEditor = require("./editor/note-editor")
 const MinderEditor = require("./editor/minder-editor")
 const Model = require("./model")
 const Commander = require("./command/commander")
-const URI = require("./common/uri");
+const URI = require("../common/uri");
 
 window._d = {}
 window._d.process = process;
@@ -34,7 +34,7 @@ editorController.registerEditor('text/markdown', noteEditor)
 editorController.registerEditor(constant.mime.minder, minderEditor)
 
 model.openProject(p.join(process.cwd(), "demo-note"));
-model.openNote(Note.create(p.join(process.cwd(), 'src/css/minder.css'),'text/markdown'));
+model.openNote(Note.create(p.join(process.cwd(), 'src/render/css/minder.css'),'text/markdown'));
 // model.openNote(Note.createUntitle('s','text/markdown'));
 
 

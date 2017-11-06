@@ -3,7 +3,7 @@ const p = require("path")
 const EventEmitter = require('eventemitter3')
 const _ = require("lodash");
 const Note = require("./editor/note");
-const URI = require('./common/uri');
+const URI = require('../common/uri');
 
 function runListeners(listeners) {
     for (let listener of listeners) {
