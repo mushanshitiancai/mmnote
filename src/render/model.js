@@ -9,12 +9,12 @@ class Model extends EventEmitter {
     static get EVENTS() {
         return {
             projectChange: 'projectChange',
-            openNote: 'openNote', // note, index
-            activeNote: 'activeNote', // note, index
-            closeNote: 'closeNote', // note, index
-            updateNote: 'updateNote', // note, index
+            openNote: 'openNote', // target, note, index
+            activeNote: 'activeNote', // target, note, index
+            closeNote: 'closeNote', // target, note, index
+            updateNote: 'updateNote', // target, note, index
 
-            noteEvent: 'noteEvent'
+            noteEvent: 'noteEvent' // target, eventName, noteEventTarget, ...noteEventArgs
         }
     }
 
@@ -82,11 +82,40 @@ class Model extends EventEmitter {
     }
 
     _delegateNoteEvent(note) {
-        _.each(Note.EVENTS,(eventName) => {
+        _.each(Note.EVENTS, (eventName) => {
             note.on(eventName, (target, ...args) => {
                 this.emit(Model.EVENTS.noteEvent, this, eventName, target, ...args)
             });
         });
+    }
+
+    _getUntitleIndexArr() {
+        let indexArr = []
+        this._openNoteMap.forEach(note => {
+            if (note.isUnTitled) {
+                indexArr.push(note.untitledIndex)
+            }
+        });
+        _.sortBy(indexArr)
+        return indexArr
+    }
+
+    newNote() {
+        let untitledInexArr = this._getUntitleIndexArr()
+        let newIndex = null;
+        if (untitledInexArr.length == 0) {
+            newIndex = 0;
+        } else {
+            for(let i = 0;;i++){
+                if(untitledInexArr.indexOf(i) == -1){
+                    newIndex = i;
+                    break;
+                }
+            }
+        }
+
+        let newNote = Note.createUntitle(newIndex, 'text/markdown');
+        this.openNote(newNote);
     }
 
     openNote(note) {
@@ -147,6 +176,7 @@ class Model extends EventEmitter {
         }
 
         this.emit(Model.EVENTS.closeNote, this, note, noteIndex);
+        note.close();
     }
 
     saveNote(note) {

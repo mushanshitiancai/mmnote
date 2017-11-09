@@ -11,7 +11,7 @@ let Commands = {
     },
     newMdNote: {
         run: function (model) {
-            
+            model.newNote();
         }
     },
     closeNote: {

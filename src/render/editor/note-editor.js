@@ -23,20 +23,14 @@ class NoteEditor {
     }
 
     open(note) {
-        if (!note.isUnTitled) {
-            this.cm.mmSwapDocByNote(note, 'gfm', () => {
-                return note.readContent();
-            });
-        } else {
-            this.cm.mmSwapDocByNote(note, 'gfm', () => {
-                return "untitled"
-            });
-        }
+        this.cm.mmSwapDocByNote(note, 'gfm', () => {
+            return note.readContent();
+        });
         this.cm.focus();
     }
 
-    close(note){
-        
+    close(note) {
+        this.cm.mmCloseDocByNote(note);   
     }
 }
 

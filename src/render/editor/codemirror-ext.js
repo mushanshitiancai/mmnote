@@ -58,6 +58,6 @@ CodeMirror.defineExtension('mmCloseDocByNote', function(note){
     let cm = this;
 
     if (cm.mmDocMap && cm.mmDocMap.has(note.uriString)) {
-        
+        cm.mmDocMap.delete(note.uriString);
     }
 });

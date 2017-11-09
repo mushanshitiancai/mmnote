@@ -97,7 +97,7 @@ class TabBar extends EventEmitter {
         if (!targetTab) throw new Error(`closeTab fail. ${id} is not in tab-bar`);
 
         targetTab.$element.remove();
-        this._tabMap.remove(id);
+        this._tabMap.delete(id);
         _.pull(this._tabIdOrderArr, id);
         if (id === this._activeTabId) this._activeTabId = null;
     }
