@@ -4,8 +4,12 @@ const _ = require('lodash');
 
 class EditorController {
     constructor($container, omodel) {
-        this.$container = $container
-        this.editors = {}
+        this._$container = $container;
+        this._editorMap = new Map();
+
+        model.on(Model.EVENTS.reset, (target) => {
+            this._reset();
+        });
 
         model.on(Model.EVENTS.openNote, (target, note, index) => {
             this.openNote(note)
@@ -20,20 +24,28 @@ class EditorController {
         });
     }
 
+    _reset(){
+        this._showNoNoteBackground();
+        this._editorMap.forEach(editor => {
+            editor.reset();
+        })
+    }
+
     registerEditor(mimeStr, editor) {
-        this.editors[mimeStr] = editor
+        this._editorMap.set(mimeStr, editor);
     }
 
     getEditorByMime(mimeStr) {
-        return this.editors[mimeStr]
+        return this._editorMap.get(mimeStr)
     }
 
     openNote(note) {
+        if(!note) return;
         let targetEditor = this.getEditorByMime(note.mime)
         if (targetEditor) {
             targetEditor.open(note)
 
-            this.mapAllEditor((editor) => {
+           this._editorMap.forEach((editor) => {
                 editor.$container.css('z-index', '-1')
             })
             targetEditor.$container.css('z-index', '1')
@@ -52,18 +64,10 @@ class EditorController {
     }
 
     _showNoNoteBackground() {
-        this.mapAllEditor((editor) => {
+        this._editorMap.forEach((editor) => {
             editor.$container.css('z-index', '-1')
         });
-        this.$container.find('#backgroud-container').css('z-index', '0');
-    }
-
-    mapAllEditor(cb) {
-        for (let mime in this.editors) {
-            if (this.editors.hasOwnProperty(mime)) {
-                cb(this.editors[mime])
-            }
-        }
+        this._$container.find('#backgroud-container').css('z-index', '0');
     }
 }
 

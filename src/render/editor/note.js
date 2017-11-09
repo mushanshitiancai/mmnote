@@ -99,6 +99,7 @@ class Note extends EventEmitter {
     }
 
     save() {
+        if(!this._rawContent || !this._content) return;
         fs.writeFileSync(this._uri.fsPath, this._content, 'utf-8');
         this._rawContent = this._content;
         this._isDirty = false;
@@ -112,6 +113,10 @@ class Note extends EventEmitter {
 
     toString() {
         return `Note(${this._uri.toString()})`
+    }
+
+    static emptyCache(){
+        Note.NOTE_CACHE = {};
     }
 }
 

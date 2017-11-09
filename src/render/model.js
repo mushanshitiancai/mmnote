@@ -8,7 +8,8 @@ const URI = require('../common/uri');
 class Model extends EventEmitter {
     static get EVENTS() {
         return {
-            projectChange: 'projectChange',
+            reset: 'reset',  // target
+            projectChange: 'projectChange',  // target
             openNote: 'openNote', // target, note, index
             activeNote: 'activeNote', // target, note, index
             closeNote: 'closeNote', // target, note, index
@@ -22,6 +23,16 @@ class Model extends EventEmitter {
         super();
         window._d.model = this;
 
+        this._reset();
+    }
+
+    emit(...args) {
+        console.log(`Model emit[%c${args[0]}%c] ${args.slice(2)}`, 'color:red', '')
+        this._log();
+        super.emit(...args);
+    }
+
+    _reset(){
         // 打开的工程的目录树
         this._treeNodes = []
 
@@ -32,15 +43,16 @@ class Model extends EventEmitter {
 
         // 当前编辑的笔记
         this._activeNote = null;
-    }
 
-    emit(...args) {
-        console.log(`Model emit[%c${args[0]}%c] ${args.slice(2)}`, 'color:red', '')
-        this._log();
-        super.emit(...args);
+        // 清空note缓存
+        Note.emptyCache();
+
+        this.emit(Model.EVENTS.reset, this);
     }
 
     openProject(folderPath) {
+        this._reset();
+
         let stats = fs.statSync(folderPath);
         let name = p.basename(folderPath);
         let rootNode = {
@@ -151,9 +163,11 @@ class Model extends EventEmitter {
     _activePrevNote() {
         this._activeNoteUriStrHistoryArr.pop()
         let lastActiveTabUriStr = _.last(this._activeNoteUriStrHistoryArr)
-        if (!lastActiveTabUriStr) return;
-
-        this._activeNote = this._openNoteMap.get(lastActiveTabUriStr)
+        if (!lastActiveTabUriStr){
+            this._activeNote = null;
+        }else{
+            this._activeNote = this._openNoteMap.get(lastActiveTabUriStr)
+        }
 
         this.emit(Model.EVENTS.activeNote, this, this._activeNote);
     }
@@ -189,7 +203,7 @@ class Model extends EventEmitter {
     _log() {
         let prefix = '    '
         let prefix2 = '      '
-        console.log(prefix + "_openNotes: \n" + _.map(this._openNoteMap, x => prefix2 + x.uriString).join("\n"));
+        console.log(prefix + "_openNoteMap: \n" + _.map([...this._openNoteMap.values()], x => prefix2 + x.uriString).join("\n"));
         console.log(prefix + "_openNoteUriStrOrderArr: \n" + _.map(this._openNoteUriStrOrderArr, x => prefix2 + x).join("\n"));
     }
 }

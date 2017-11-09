@@ -12,9 +12,11 @@ class TabBar extends EventEmitter {
 
         this._model = model
         this._$container = $container
-        this._tabMap = new Map();
-        this._tabIdOrderArr = [];
-        this._activeTabId = null
+        this._reset();
+
+        model.on(Model.EVENTS.reset, (target) => {
+            this._reset();
+        });
 
         model.on(Model.EVENTS.openNote, (target, note, index) => {
             let newTab = new Tab(note.uri.toString(), note.name);
@@ -26,6 +28,7 @@ class TabBar extends EventEmitter {
         });
 
         model.on(Model.EVENTS.activeNote, (target, note) => {
+            if(!note) return;
             this.activeTab(note.uri.toString());
         });
 
@@ -40,6 +43,22 @@ class TabBar extends EventEmitter {
                 }
             }
         });
+    }
+
+    _log(){
+        console.log(`Tab`)
+        console.log(`   ${this._tabMap}`)
+        console.log(`   ${this._tabIdOrderArr}`)
+        console.log(`   ${this._activeTabId}`)
+        console.log(`   ${this._$container}`)
+    }
+
+    _reset(){
+        this._tabMap = new Map();
+        this._tabIdOrderArr = [];
+        this._activeTabId = null;
+
+        this._$container.empty();
     }
 
     _getActiveTabIndex() {

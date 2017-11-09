@@ -1,34 +1,3 @@
-CodeMirror.defineDocExtension('mmSetMetaInfo', function (key, value) {
-    let doc = this
-
-    if (!doc.mmMetaInfo) {
-        doc.mmMetaInfo = {};
-    }
-    if (key === undefined || key === null) return;
-
-    doc.mmMetaInfo[key] = value;
-});
-
-CodeMirror.defineDocExtension('mmGetMetaInfo', function (key) {
-    let doc = this;
-
-    if (!key) return doc.mmMetaInfo;
-
-    return doc.mmMetaInfo ? doc.mmMetaInfo[key] : undefined;
-});
-
-["Note"].forEach(function (key) {
-    CodeMirror.defineDocExtension(`mmSet${key}`, function (value) {
-        let doc = this;
-        doc.mmSetMetaInfo(key.toLowerCase(), value);
-    });
-
-    CodeMirror.defineDocExtension(`mmGet${key}`, function () {
-        let doc = this;
-        return doc.mmGetMetaInfo(key.toLowerCase());
-    });
-});
-
 CodeMirror.defineExtension('mmSwapDocByNote', function (note, mode, getContent, newDocSwapCallback) {
     // console.log('mmSwapDocByNote ', note, mode, getContent, newDocSwapCallback);
     let cm = this;
