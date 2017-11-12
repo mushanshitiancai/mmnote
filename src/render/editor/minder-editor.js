@@ -4,35 +4,80 @@ const fs = require("fs")
 class MinderEditor {
     constructor($container) {
         this._isDebug = false
-
         this.$container = $container;
-        this.$minder = $('<div>', {
+        this._$minder = $('<div>', {
             id: "minder"
-        });
-        this.$container.append(this.$minder);
+        }).appendTo($container);
 
-        this.km = km = window.km = new kityminder.Minder();
-        km.renderTo(this.$minder.get(0));
+        this.reset();
+    }
 
-        this.receiver = new Receiver(this.$container, this.km, this);
+    reset() {
+        this._openKityMinderMap = new Map();
+        this._activeKityMinder = null;
+    }
+
+    _getKityMinder(note) {
+        if (this._openKityMinderMap.has(note.uriString)) {
+            return this._openKityMinderMap.get(note.uriString);
+        }
+        return null;
+    }
+
+    _createKityMinder(note) {
+        let km = new kityminder.Minder();
+        km.renderTo(this._$minder.get(0));
+        km._note = note;
+        let receiver = km._receiver = new Receiver(this.$container, km, this);
 
         km.on('dblclick', () => {
             if (km.getSelectedNode() && km._status !== 'readonly') {
-                this.receiver.editText();
+                receiver.editText();
             }
         });
+
+        km.on('contentchange', (evnet)=>{
+            km._note.update(JSON.stringify(km.exportJson()));
+        });
+
+        // this._codeMirror.on('change', (cm, changeObj) => {
+        //     let doc = cm.getDoc();
+        //     let note = doc._context.note;
+        //     note.update(doc.getValue()); // getValue()是否低效？
+        // })
+
+        km.importJson(JSON.parse(note.readContent()))
+        return km;
     }
 
-    reset(){
-        
+    open(note) {
+        if(this._openKityMinderMap.has(note.uriString)){
+            this._active(note);
+        }else{
+            let km = this._createKityMinder(note);
+            this._openKityMinderMap.set(note.uriString, km);
+        }
     }
 
-    open(note){
-        this.km.importJson(JSON.parse(note.readContent()))
+    _active(note){
+        if(this._openKityMinderMap.has(note.uriString)){
+            let km = this._openKityMinderMap.get(note.uriString)
+            if(this._activeKityMinder == km) return;
+
+            km.renderTo(this._$minder.get(0));
+            this._activeKityMinder = km;
+        }
     }
 
-    close(note){
+    close(note) {
+        if(this._openKityMinderMap.has(note.uriString)){
+            let km = this._openKityMinderMap.get(note.uriString)
+            if(this._activeKityMinder == km){
+                _activeKityMinder = null;
+            }
 
+            this._openKityMinderMap.delete(note.uriString)
+        }
     }
 }
 
@@ -134,7 +179,7 @@ class Receiver {
     }
 
     submitText() {
-        if(!this._isShow) return;
+        if (!this._isShow) return;
 
         let node = this.km.getSelectedNode()
         if (!node) return;
