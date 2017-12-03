@@ -20,6 +20,7 @@
     "jquery": "^3.2.1",
     "lodash": "^4.17.4",
     "mime": "^1.4.0",
+    "mousetrap": "^1.6.1",
     "normalize.css": "^7.0.0",
     "split.js": "^1.3.5",
     "ztree": "^3.5.24"

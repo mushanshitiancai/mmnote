@@ -3,7 +3,7 @@ const fs = require("fs")
 
 class MinderEditor {
     constructor($container) {
-        this._isDebug = false
+        this._isDebug = true
         this.$container = $container;
         this._$minder = $('<div>', {
             id: "minder"
@@ -25,7 +25,14 @@ class MinderEditor {
     }
 
     _createKityMinder(note) {
-        let km = new kityminder.Minder();
+        let km = new kityminder.Minder({
+            enableKeyReceiver: false,
+            enableAnimation: true
+        });
+
+        if(!_d.kms) _d.kms = [];
+        _d.kms.push(km)
+
         km.renderTo(this._$minder.get(0));
         km._note = note;
         let receiver = km._receiver = new Receiver(this.$container, km, this);
@@ -36,8 +43,21 @@ class MinderEditor {
             }
         });
 
-        km.on('contentchange', (evnet)=>{
+        km.on('contentchange', (evnet) => {
             km._note.update(JSON.stringify(km.exportJson()));
+        });
+        this._$minder.focus();
+
+        this._$minder.on('keydown', (e) => {
+            console(e);
+        });
+
+        this._$minder.on('keypress', (e) => {
+            console(e);
+        });
+
+        this._$minder.on('keyup', (e) => {
+            console(e);
         });
 
         // this._codeMirror.on('change', (cm, changeObj) => {
@@ -51,18 +71,18 @@ class MinderEditor {
     }
 
     open(note) {
-        if(this._openKityMinderMap.has(note.uriString)){
+        if (this._openKityMinderMap.has(note.uriString)) {
             this._active(note);
-        }else{
+        } else {
             let km = this._createKityMinder(note);
             this._openKityMinderMap.set(note.uriString, km);
         }
     }
 
-    _active(note){
-        if(this._openKityMinderMap.has(note.uriString)){
+    _active(note) {
+        if (this._openKityMinderMap.has(note.uriString)) {
             let km = this._openKityMinderMap.get(note.uriString)
-            if(this._activeKityMinder == km) return;
+            if (this._activeKityMinder == km) return;
 
             km.renderTo(this._$minder.get(0));
             this._activeKityMinder = km;
@@ -70,9 +90,9 @@ class MinderEditor {
     }
 
     close(note) {
-        if(this._openKityMinderMap.has(note.uriString)){
+        if (this._openKityMinderMap.has(note.uriString)) {
             let km = this._openKityMinderMap.get(note.uriString)
-            if(this._activeKityMinder == km){
+            if (this._activeKityMinder == km) {
                 _activeKityMinder = null;
             }
 
@@ -87,21 +107,27 @@ class Receiver {
         this.km = km;
         this.minder = minder;
 
-        this.$element = $('<div>', {
+        this.$div = $('<div>', {
             class: 'receiver',
             contenteditable: true
         });
 
         if (this.minder._isDebug) {
-            this.$element.addClass('debug')
+            this.$div.addClass('debug')
         }
 
-        $container.append(this.$element);
+        $container.append(this.$div);
 
-        this.$element.blur(() => {
-            this.submitText()
-        })
+        // this.$div.blur(() => {
+        //     // this.submitText()
+        //     console.log("receiver onBlur")
+        // });
 
+        this.$div.keydown(this.dispatchKey.bind(this));
+        this.$div.keypress(this.dispatchKey.bind(this));
+        this.$div.keyup(this.dispatchKey.bind(this));
+
+        // 如果在输入框显示的时候移动思维导图，输入框也需要跟着移动
         km.on('viewchange', (e) => {
             if (this._isShow) {
                 this.updatePosition();
@@ -109,17 +135,37 @@ class Receiver {
         });
     }
 
+    dispatchKey(e) {
+        console.log(this._isShow,e);
+        if (!this._isShow) {
+            // e.preventDefault();
+            this.km.dispatchKeyEvent(e);
+        } else {
+            if (e.type == "keypress") {
+                switch (e.which) {
+                    case 13:/*enter*/
+                        e.preventDefault()
+                        this.submitText()
+                        break;
+                    case 27:/*esc*/
+                        e.preventDefault()
+                        this.hide()
+                        break;
+                }
+            }
+        }
+    }
+
     show() {
         let node = this.km.getSelectedNode()
         if (node) {
             let fontSize = node.getData('font-size') || node.getStyle('font-size');
-            this.$element.css('font-size', fontSize + 'px');
-            this.$element.css('min-width', '0px');
-            // this.$element.css('min-width', this.$element.get(0).clientWidth + 'px');
-            this.$element.css('font-weight', node.getData('font-weight') || '');
-            this.$element.css('font-style', node.getData('font-style') || '');
-            this.$element.addClass('input')
-            this.$element.focus()
+            this.$div.css('font-size', fontSize + 'px');
+            this.$div.css('min-width', '0px');
+            this.$div.css('font-weight', node.getData('font-weight') || '');
+            this.$div.css('font-style', node.getData('font-style') || '');
+            this.$div.addClass('input')
+            this.$div.focus()
             this._isShow = true
         }
     }
@@ -130,8 +176,11 @@ class Receiver {
 
     hide() {
         this._isShow = false
-        this.$element.removeClass('input')
-        this.km.focus()
+        // this.$div.removeClass('input')
+
+        // this.$div.blur();
+        //window.getSelection().removeAllRanges();
+        // this.km.focus()
     }
 
     updatePosition() {
@@ -139,8 +188,8 @@ class Receiver {
         if (!focusNode) return;
 
         var box = focusNode.getRenderBox('TextRenderer');
-        this.$element.css("left", Math.round(box.x) + 'px');
-        this.$element.css("top", (this.minder._isDebug ? Math.round(box.bottom + 30) : Math.round(box.y)) + 'px');
+        this.$div.css("left", Math.round(box.x) + 'px');
+        this.$div.css("top", (this.minder._isDebug ? Math.round(box.bottom + 30) : Math.round(box.y)) + 'px');
     }
 
     editText() {
@@ -150,7 +199,7 @@ class Receiver {
         this.updatePosition();
         this.show();
 
-        let $textContainer = this.$element;
+        let $textContainer = this.$div;
 
         // 如果有粗体或者斜体，输入容器要设置对应的风格
         if (node.getData('font-weight') === 'bold') {
@@ -164,17 +213,7 @@ class Receiver {
             $textContainer = $i
         }
         $textContainer.text(this.km.queryCommandValue('text'));
-        $textContainer.keydown((e) => {
-            console.log(e.type + ": " + e.which);
-            switch (e.which) {
-                case 13:/*enter*/
-                    this.submitText()
-                    break;
-                case 27:/*esc*/
-                    this.hide()
-                    break;
-            }
-        })
+
         // $textContainer.selectAll()
     }
 
@@ -185,7 +224,7 @@ class Receiver {
         if (!node) return;
 
         this.hide()
-        node.setText(this.$element.text())
+        node.setText(this.$div.text())
         this.km.fire("contentchange");
         this.km.getRoot().renderTree();
         this.km.layout(300);

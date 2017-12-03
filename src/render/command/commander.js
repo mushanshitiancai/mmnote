@@ -3,7 +3,7 @@ const Commands = require("./commands")
 /**
  * 界面上的按钮会触发Command。data-command指定命令名，data-command-arg指定参数。
  */
-class Commander {
+class CommandService {
     constructor(model, ipcRender) {
         this.model = model;
         let _this = this;
@@ -30,5 +30,5 @@ class Commander {
     }
 }
 
-module.exports = Commander;
+module.exports = CommandService;
 
