@@ -40,7 +40,7 @@
 <body>
   <div id="window-container" class="window">
     <header class="toolbar toolbar-header">
-      <h1 class="title" style="display:none">MMNote</h1>
+      <h1 id="window-title" class="title" style="display:none">MMNote</h1>
       <!-- 工具条 -->
       <div class="toolbar-actions">
         <div class="btn-group">
@@ -86,6 +86,10 @@
 </body>
 
 <script>
+    if(process.platform == 'darwin'){
+      $("#window-title").css("display","block")
+    }
+
     var Split = require('split.js')
     Split(['#tree-container', '#editor-container'], {
       sizes: [25, 75],

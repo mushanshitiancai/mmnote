@@ -3,7 +3,7 @@ const fs = require("fs")
 
 class MinderEditor {
     constructor($container) {
-        this._isDebug = true
+        // this._isDebug = true
         this.$container = $container;
         this._$minder = $('<div>', {
             id: "minder"
@@ -25,12 +25,14 @@ class MinderEditor {
     }
 
     _createKityMinder(note) {
+        console.log('_createKityMinder');
         let km = new kityminder.Minder({
             enableKeyReceiver: false,
             enableAnimation: true
         });
+        km._fuck = Math.random()
 
-        if(!_d.kms) _d.kms = [];
+        if (!_d.kms) _d.kms = [];
         _d.kms.push(km)
 
         km.renderTo(this._$minder.get(0));
@@ -48,18 +50,6 @@ class MinderEditor {
         });
         this._$minder.focus();
 
-        this._$minder.on('keydown', (e) => {
-            console(e);
-        });
-
-        this._$minder.on('keypress', (e) => {
-            console(e);
-        });
-
-        this._$minder.on('keyup', (e) => {
-            console(e);
-        });
-
         // this._codeMirror.on('change', (cm, changeObj) => {
         //     let doc = cm.getDoc();
         //     let note = doc._context.note;
@@ -67,6 +57,7 @@ class MinderEditor {
         // })
 
         km.importJson(JSON.parse(note.readContent()))
+
         return km;
     }
 
@@ -84,7 +75,7 @@ class MinderEditor {
             let km = this._openKityMinderMap.get(note.uriString)
             if (this._activeKityMinder == km) return;
 
-            km.renderTo(this._$minder.get(0));
+            // km.renderTo(this._$minder.get(0));
             this._activeKityMinder = km;
         }
     }
@@ -104,12 +95,17 @@ class MinderEditor {
 class Receiver {
     constructor($container, km, minder) {
         this._isShow = false
+        setInterval(() => {
+            console.log('_isShow = ' + this._isShow);
+        }, 1000);
+
         this.km = km;
         this.minder = minder;
 
         this.$div = $('<div>', {
             class: 'receiver',
-            contenteditable: true
+            contenteditable: true,
+            tabindex: -1
         });
 
         if (this.minder._isDebug) {
@@ -118,30 +114,26 @@ class Receiver {
 
         $container.append(this.$div);
 
-        // this.$div.blur(() => {
+        // this.$div.blur((e) => {
+        //     // e.preventDefault();
+        //     this.hide()
         //     // this.submitText()
         //     console.log("receiver onBlur")
         // });
 
-        this.$div.keydown(this.dispatchKey.bind(this));
-        this.$div.keypress(this.dispatchKey.bind(this));
-        this.$div.keyup(this.dispatchKey.bind(this));
-
-        // 如果在输入框显示的时候移动思维导图，输入框也需要跟着移动
-        km.on('viewchange', (e) => {
-            if (this._isShow) {
-                this.updatePosition();
-            }
-        });
-    }
-
-    dispatchKey(e) {
-        console.log(this._isShow,e);
-        if (!this._isShow) {
-            // e.preventDefault();
-            this.km.dispatchKeyEvent(e);
-        } else {
-            if (e.type == "keypress") {
+        this.$div.keydown((e) => {
+            if (!this._isShow) {
+                // 如果有选中节点，并按下按键，则显示输入框，进行输入
+                if (this.km.getSelectedNode() && this._isIntendToInput(e)) {
+                    console.log('want to input');
+                    this.show()
+                } else {
+                    // 否则清理刚刚的输入，并把按键作为快捷键处理
+                    console.log('want to shortcut');
+                    this.$div.html('');
+                    this.km.dispatchKeyEvent(e);
+                }
+            } else {
                 switch (e.which) {
                     case 13:/*enter*/
                         e.preventDefault()
@@ -153,12 +145,69 @@ class Receiver {
                         break;
                 }
             }
-        }
+        });
+        this.$div.keypress((e) => {
+
+        });
+        this.$div.keyup((e) => {
+
+        });
+
+        // 如果在输入框显示的时候移动思维导图，输入框也需要跟着移动
+        km.on('viewchange', (e) => {
+            if (this._isShow) {
+                this.updatePosition();
+            }
+        });
+
+        km.on('beforemousedown', (e) => {
+            console.log("km on beforemousedown", e);
+
+            this.submitText()
+        });
+
+        this._selectAll();
+    }
+
+    _selectAll() {
+        // 保证有被选中的
+        if (!this.$div.innerHTML) this.$div.innerHTML = '&nbsp;';
+        var range = document.createRange();
+        var selection = window.getSelection();
+        range.selectNodeContents(this.$div.get(0));
+        selection.removeAllRanges();
+        selection.addRange(range);
+        this.$div.focus();
+    }
+
+    // Nice: http://unixpapa.com/js/key.html
+    _isIntendToInput(e) {
+        if (e.ctrlKey || e.metaKey || e.altKey) return false;
+
+        // a-zA-Z
+        if (e.keyCode >= 65 && e.keyCode <= 90) return true;
+
+        // 0-9 以及其上面的符号
+        if (e.keyCode >= 48 && e.keyCode <= 57) return true;
+
+        // 小键盘区域 (除回车外)
+        if (e.keyCode != 108 && e.keyCode >= 96 && e.keyCode <= 111) return true;
+
+        // 小键盘区域 (除回车外)
+        // @yinheli from pull request
+        if (e.keyCode != 108 && e.keyCode >= 96 && e.keyCode <= 111) return true;
+
+        // 输入法
+        if (e.keyCode == 229 || e.keyCode === 0) return true;
+
+        return false;
     }
 
     show() {
         let node = this.km.getSelectedNode()
         if (node) {
+            this.updatePosition();
+
             let fontSize = node.getData('font-size') || node.getStyle('font-size');
             this.$div.css('font-size', fontSize + 'px');
             this.$div.css('min-width', '0px');
@@ -176,11 +225,8 @@ class Receiver {
 
     hide() {
         this._isShow = false
-        // this.$div.removeClass('input')
-
-        // this.$div.blur();
-        //window.getSelection().removeAllRanges();
-        // this.km.focus()
+        this.$div.removeClass('input')
+        this._selectAll()
     }
 
     updatePosition() {
@@ -196,7 +242,6 @@ class Receiver {
         let node = this.km.getSelectedNode()
         if (!node) return;
 
-        this.updatePosition();
         this.show();
 
         let $textContainer = this.$div;
@@ -214,11 +259,12 @@ class Receiver {
         }
         $textContainer.text(this.km.queryCommandValue('text'));
 
-        // $textContainer.selectAll()
+        this._selectAll()
     }
 
     submitText() {
         if (!this._isShow) return;
+        console.log('submitText');
 
         let node = this.km.getSelectedNode()
         if (!node) return;
